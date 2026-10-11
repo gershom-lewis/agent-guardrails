@@ -1,0 +1,8 @@
+__pycache__/
+*.pyc
+*.log
+.env
+.env.*
+gate-decisions.log
+gate-config.json
+*.bak-*

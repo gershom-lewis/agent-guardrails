@@ -1,0 +1,163 @@
+{
+  "_comment": [
+    "agent-guardrails - least-privilege configuration for an AI coding agent.",
+    "Review every rule before adopting it. A deny list copied without reading is a",
+    "configuration you cannot defend. Known gaps are documented in LIMITS.md.",
+    "Hooks live in hooks/ - copy them to ~/.claude/hooks/ and chmod +x."
+  ],
+  "permissions": {
+    "allow": [
+      "Read",
+      "Edit",
+      "Write",
+      "Bash(git *)",
+      "Bash(gh *)",
+      "Bash(cd *)",
+      "Bash(npm *)",
+      "Bash(node *)",
+      "Bash(python3 *)",
+      "Bash(claude *)",
+      "Bash(ls *)",
+      "Bash(cat *)",
+      "Bash(grep *)",
+      "Bash(find *)",
+      "Bash(mkdir *)",
+      "Bash(cp *)"
+    ],
+    "ask": [
+      "Bash(gh repo delete*)",
+      "Bash(gh secret*)",
+      "Bash(node --eval*)",
+      "Bash(node -e *)",
+      "Bash(python -c *)",
+      "Bash(python3 -c *)",
+      "Bash(python3 -m *)"
+    ],
+    "deny": [
+      "Bash(bun add*)",
+      "Bash(cargo install*)",
+      "Bash(claude mcp add*)",
+      "Bash(curl *)",
+      "Bash(docker pull*)",
+      "Bash(docker run*)",
+      "Bash(gem install*)",
+      "Bash(go install*)",
+      "Bash(npm add*)",
+      "Bash(npm ci*)",
+      "Bash(npm i *)",
+      "Bash(npm install*)",
+      "Bash(npx *)",
+      "Bash(pip install*)",
+      "Bash(pip3 install*)",
+      "Bash(pnpm add*)",
+      "Bash(python -m pip install*)",
+      "Bash(python -m pip*)",
+      "Bash(python3 -m pip install*)",
+      "Bash(python3 -m pip*)",
+      "Bash(uv add*)",
+      "Bash(uv pip install*)",
+      "Bash(wget *)",
+      "Bash(yarn add*)"
+    ]
+  },
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ~/.claude/hooks/credential-awareness.sh",
+            "timeout": 5
+          },
+          {
+            "type": "command",
+            "command": "bash ~/.claude/hooks/automation-keyword-detector.sh",
+            "timeout": 5
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ~/.claude/hooks/current-datetime.sh"
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ~/.claude/hooks/no-outbound-messages.sh",
+            "timeout": 5
+          },
+          {
+            "type": "command",
+            "command": "bash ~/.claude/hooks/ai-hallucination-prevention.sh",
+            "timeout": 10
+          },
+          {
+            "type": "command",
+            "command": "bash ~/.claude/hooks/tier3-gate.sh",
+            "timeout": 8
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ~/.claude/hooks/credential-guard.sh",
+            "timeout": 5
+          }
+        ]
+      },
+      {
+        "matcher": "Write|Edit|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ~/.claude/hooks/engram-writethrough.sh",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ~/.claude/hooks/claim-verifier.sh",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ~/.claude/hooks/auto-daily-log.sh",
+            "timeout": 10
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ~/.claude/hooks/engram-extract.sh",
+            "timeout": 60
+          }
+        ]
+      }
+    ]
+  }
+}
